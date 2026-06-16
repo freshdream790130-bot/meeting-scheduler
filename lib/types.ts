@@ -8,6 +8,7 @@ export interface MeetingFile {
   id: string;
   original_name: string;
   stored_name: string;
+  blob_url?: string;
   size: number;
   mime_type: string;
   uploaded_at: string;

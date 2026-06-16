@@ -8,7 +8,7 @@ export async function GET(
   const { id } = await ctx.params;
   const token = request.nextUrl.searchParams.get('token');
 
-  const meeting = getMeeting(id);
+  const meeting = await getMeeting(id);
   if (!meeting) {
     return Response.json({ error: '회의를 찾을 수 없습니다.' }, { status: 404 });
   }
@@ -16,6 +16,6 @@ export async function GET(
     return Response.json({ error: '권한이 없습니다.' }, { status: 403 });
   }
 
-  const votes = getVotes(id);
+  const votes = await getVotes(id);
   return Response.json({ meeting, votes });
 }

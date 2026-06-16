@@ -1,6 +1,5 @@
 import type { NextRequest } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { del } from '@vercel/blob';
 import { getMeeting, deleteMeeting } from '@/lib/db';
 
 export async function GET(
@@ -8,7 +7,7 @@ export async function GET(
   ctx: RouteContext<'/api/meetings/[id]'>
 ) {
   const { id } = await ctx.params;
-  const meeting = getMeeting(id);
+  const meeting = await getMeeting(id);
   if (!meeting) {
     return Response.json({ error: '회의를 찾을 수 없습니다.' }, { status: 404 });
   }
@@ -21,13 +20,17 @@ export async function DELETE(
   ctx: RouteContext<'/api/meetings/[id]'>
 ) {
   const { id } = await ctx.params;
-  const deleted = deleteMeeting(id);
-  if (!deleted) {
+  const meeting = await getMeeting(id);
+  if (!meeting) {
     return Response.json({ error: '회의를 찾을 수 없습니다.' }, { status: 404 });
   }
-  const uploadDir = path.join(process.cwd(), 'data', 'uploads', id);
-  if (fs.existsSync(uploadDir)) {
-    fs.rmSync(uploadDir, { recursive: true, force: true });
+
+  // Vercel Blob에 업로드된 파일 삭제
+  const blobUrls = meeting.files.map((f) => f.blob_url).filter((u): u is string => !!u);
+  if (blobUrls.length > 0) {
+    await Promise.all(blobUrls.map((url) => del(url)));
   }
+
+  await deleteMeeting(id);
   return Response.json({ ok: true });
 }

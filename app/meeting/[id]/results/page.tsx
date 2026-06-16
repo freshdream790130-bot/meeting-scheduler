@@ -22,10 +22,10 @@ export default async function ResultsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const meeting = getMeeting(id);
+  const meeting = await getMeeting(id);
   if (!meeting) notFound();
 
-  const votes = getVotes(id);
+  const votes = await getVotes(id);
   const total = votes.length;
 
   const ranked = meeting.candidate_dates

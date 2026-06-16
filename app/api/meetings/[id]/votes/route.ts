@@ -8,11 +8,10 @@ export async function GET(
   ctx: RouteContext<'/api/meetings/[id]/votes'>
 ) {
   const { id } = await ctx.params;
-  if (!getMeeting(id)) {
+  if (!(await getMeeting(id))) {
     return Response.json({ error: '회의를 찾을 수 없습니다.' }, { status: 404 });
   }
-  const votes = getVotes(id);
-  return Response.json(votes);
+  return Response.json(await getVotes(id));
 }
 
 export async function POST(
@@ -20,7 +19,7 @@ export async function POST(
   ctx: RouteContext<'/api/meetings/[id]/votes'>
 ) {
   const { id } = await ctx.params;
-  const meeting = getMeeting(id);
+  const meeting = await getMeeting(id);
   if (!meeting) {
     return Response.json({ error: '회의를 찾을 수 없습니다.' }, { status: 404 });
   }
@@ -40,6 +39,6 @@ export async function POST(
     created_at: new Date().toISOString(),
   };
 
-  saveVote(vote);
+  await saveVote(vote);
   return Response.json(vote, { status: 201 });
 }
